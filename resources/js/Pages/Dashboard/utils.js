@@ -1,179 +1,297 @@
 import axios from 'axios';
 import geo from '@/data/geo.json';
 
+// === Constants ===
+
 export const DEFAULT_GL = 'uk';
 export const DEFAULT_HL = 'en';
-export const DEFAULT_EVENT_LOCATION = 'United Kingdom';
+export const DEFAULT_EVENT_LOCATION = '';
 
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const pad2 = n => String(n).padStart(2,'0');
-const iso = (y,m,d)=>`${y}-${pad2(m)}-${pad2(d)}`;
-export const join = (arr, sep=' • ')=>arr.filter(Boolean).join(sep);
-export const fmtInt = n => (typeof n==='number'?n.toLocaleString():n);
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-export function fmtDuration(mins){
-  if(!mins||isNaN(mins))return '';
-  const h=Math.floor(mins/60),m=mins%60;
-  return `${h?`${h}h `:''}${m?`${m}m`:''}`.trim();
+function pad2(n) {
+  return String(n).padStart(2, '0');
 }
 
-export function fmtDateTimeSimple(s){
-  if(!s||typeof s!=='string')return '';
-  const [d,t]=s.split(' ');
-  if(!d)return s;
-  const [Y,M,D]=d.split('-').map(Number);
-  const label=isNaN(D)?d:`${pad2(D)} ${MONTHS[(M||1)-1]}`;
-  return t?`${label} • ${t}`:label;
+function toIsoDate(y, m, d) {
+  return `${y}-${pad2(m)}-${pad2(d)}`;
 }
 
-export function parseWhenToISO(s){
-  if(!s)return '';
-  const a=s.match(/(\d{4})-(\d{2})-(\d{2})/);
-  if(a)return`${a[1]}-${a[2]}-${a[3]}`;
-  const mm={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,sept:9,oct:10,nov:11,dec:12,'dec.':12};
-  const b=s.toLowerCase().match(/(\d{1,2})\s([a-z\.]{3,5})/);
-  if(b){const d=+b[1],m=mm[b[2]];if(!m)return'';const now=new Date();let y=now.getFullYear();const cand=new Date(y,m-1,d);if(cand<now)y+=1;return iso(y,m,d);}
-  const c=s.toLowerCase().match(/([a-z]{3,10})\s(\d{1,2}),?\s(\d{4})/);
-  if(c){const m=mm[c[1]],d=+c[2],y=+c[3];return(m&&y&&d)?iso(y,m,d):'';}
+export function join(arr, sep = ' • ') {
+  return arr.filter(Boolean).join(sep);
+}
+
+export function fmtInt(n) {
+  return typeof n === 'number' ? n.toLocaleString() : n;
+}
+
+export function fmtDuration(mins) {
+  if (!mins || isNaN(mins)) return '';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return [h && `${h}h`, m && `${m}m`].filter(Boolean).join(' ');
+}
+
+export function fmtDateTimeSimple(s) {
+  if (!s || typeof s !== 'string') return '';
+  const [date, time] = s.split(' ');
+  if (!date) return s;
+  const [Y, M, D] = date.split('-').map(Number);
+  const label = isNaN(D) ? date : `${pad2(D)} ${MONTHS[(M || 1) - 1]}`;
+  return time ? `${label} • ${time}` : label;
+}
+
+export function inferCurrencySymbol(data) {
+  const url = data?.requestMetadata?.url || '';
+  const curr = (url.match(/curr=([A-Z]{3})/)?.[1]) || 'EUR';
+  const symbols = { EUR: '€', USD: '$', GBP: '£', NOK: 'kr' };
+  return symbols[curr] || curr + ' ';
+}
+
+// === Date Parsing ===
+
+const MONTH_MAP = {
+  jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6,
+  jul: 7, aug: 8, sep: 9, sept: 9, oct: 10, nov: 11, dec: 12,
+};
+
+export function parseEventDate(text) {
+  if (!text || typeof text !== 'string') return '';
+
+  // Already ISO format: "2026-04-11"
+  const isoMatch = text.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) return isoMatch[0];
+
+  // "11 Apr" or "11 Apr,"
+  const dayMonthMatch = text.toLowerCase().match(/(\d{1,2})\s([a-z]{3,5})/);
+  if (dayMonthMatch) {
+    const day = +dayMonthMatch[1];
+    const month = MONTH_MAP[dayMonthMatch[2]];
+    if (!month) return '';
+    let year = new Date().getFullYear();
+    if (new Date(year, month - 1, day) < new Date()) year++;
+    return toIsoDate(year, month, day);
+  }
+
+  // "April 11, 2026"
+  const longMatch = text.toLowerCase().match(/([a-z]{3,10})\s(\d{1,2}),?\s(\d{4})/);
+  if (longMatch) {
+    const month = MONTH_MAP[longMatch[1]];
+    const day = +longMatch[2];
+    const year = +longMatch[3];
+    if (month && day && year) return toIsoDate(year, month, day);
+  }
+
   return '';
 }
 
-export function getCityFromAddress(addr){
-  if(!Array.isArray(addr)||!addr.length)return'';
-  const last=String(addr[addr.length-1]||'').trim();
-  if(!last)return'';
-  const parts=last.split(',').map(s=>s.trim()).filter(Boolean);
-  if(!parts.length)return'';
-  const city=parts[0];
-  const tail=parts[parts.length-1]||'';
-  const prev=parts[parts.length-2]||'';
-  let iso2='';
-  if(/^[A-Z]{2}$/.test(tail)) iso2=geo.stateProvinceToCountry[tail]||'';
-  if(!iso2&&/^[A-Z]{2}$/.test(prev)) iso2=geo.stateProvinceToCountry[prev]||'';
-  if(!iso2&&/^[A-Za-z\s\.]+$/.test(tail)){
-    const m=tail.toLowerCase();
-    if(['united kingdom','uk','great britain','britain','england'].includes(m)) iso2='GB';
-    else if(['united states','usa','america','united states of america','us'].includes(m)) iso2='US';
-    else if(['canada','ca'].includes(m)) iso2='CA';
-  }
-  return iso2?`${city}, ${iso2}`:city;
+export function getEventTravelDates(evt) {
+  const eventDate = evt?.startDate?.match(/^\d{4}-\d{2}-\d{2}/)
+    ? evt.startDate.slice(0, 10)
+    : parseEventDate(evt?.when || '');
+
+  if (!eventDate) return { eventISO: '', departISO: '', returnISO: '' };
+
+  const date = new Date(`${eventDate}T12:00:00`);
+  const dayBefore = new Date(date);
+  dayBefore.setDate(date.getDate() - 1);
+  const dayAfter = new Date(date);
+  dayAfter.setDate(date.getDate() + 1);
+
+  return {
+    eventISO: eventDate,
+    departISO: toIsoDate(dayBefore.getFullYear(), dayBefore.getMonth() + 1, dayBefore.getDate()),
+    returnISO: toIsoDate(dayAfter.getFullYear(), dayAfter.getMonth() + 1, dayAfter.getDate()),
+  };
 }
 
-export function normalizeEvents(payload){
-  const raw=payload?.eventsResults||payload?.events||payload?.data?.events||payload?.results?.events||payload?.results||payload?.items||[];
-  return (raw||[]).map((e,i)=>{
-    const address=Array.isArray(e?.address)?e.address:[];
-    const whenTxt=e?.date?.when||e?.when||e?.date||e?.startDate||'';
-    const startFrom=e?.date?.startDate||e?.startDate||'';
-    const startISO=typeof startFrom==='string'&&/^(\d{4}-\d{2}-\d{2})/.test(startFrom)?RegExp.$1:parseWhenToISO(whenTxt);
+// === Geography ===
+
+const COUNTRY_NAMES_TO_ISO = {
+  'united kingdom': 'GB', 'uk': 'GB', 'great britain': 'GB', 'england': 'GB',
+  'united states': 'US', 'usa': 'US', 'america': 'US',
+  'canada': 'CA', 'france': 'FR', 'germany': 'DE', 'italy': 'IT', 'spain': 'ES',
+  'portugal': 'PT', 'netherlands': 'NL', 'belgium': 'BE', 'switzerland': 'CH',
+  'austria': 'AT', 'poland': 'PL', 'czechia': 'CZ', 'czech republic': 'CZ',
+  'hungary': 'HU', 'croatia': 'HR', 'serbia': 'RS', 'romania': 'RO', 'bulgaria': 'BG',
+  'greece': 'GR', 'sweden': 'SE', 'norway': 'NO', 'finland': 'FI', 'denmark': 'DK',
+  'ireland': 'IE', 'estonia': 'EE', 'latvia': 'LV', 'lithuania': 'LT',
+  'turkey': 'TR', 'japan': 'JP', 'south korea': 'KR', 'china': 'CN', 'india': 'IN',
+  'thailand': 'TH', 'australia': 'AU', 'new zealand': 'NZ',
+  'brazil': 'BR', 'argentina': 'AR', 'mexico': 'MX',
+  'south africa': 'ZA', 'egypt': 'EG', 'morocco': 'MA',
+  'united arab emirates': 'AE', 'israel': 'IL', 'russia': 'RU', 'ukraine': 'UA',
+};
+
+export function getCityFromAddress(addr) {
+  if (!Array.isArray(addr) || !addr.length) return '';
+
+  const lastPart = String(addr[addr.length - 1] || '').trim();
+  if (!lastPart) return '';
+
+  const parts = lastPart.split(',').map(s => s.trim()).filter(Boolean);
+  const city = parts[0] || '';
+  const country = parts[parts.length - 1] || '';
+
+  // Try to find a 2-letter ISO code
+  let iso = '';
+  if (/^[A-Z]{2}$/.test(country)) {
+    iso = geo.stateProvinceToCountry[country] || country;
+  } else {
+    iso = COUNTRY_NAMES_TO_ISO[country.toLowerCase()] || '';
+  }
+
+  return iso ? `${city}, ${iso}` : city;
+}
+
+export function mapsLinkFromHotel(h) {
+  if (h?.gps?.latitude && h?.gps?.longitude) {
+    return `https://www.google.com/maps/search/?api=1&query=${h.gps.latitude},${h.gps.longitude}`;
+  }
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${h?.title || ''} ${h?.address || ''}`.trim())}`;
+}
+
+// === Airport Resolution (via backend Groq LLM) ===
+
+export async function resolveCityToIataList(cityLabel = '') {
+  const key = (cityLabel || '').trim();
+  if (!key) return [];
+  const { data } = await axios.get('/api/geo/airports', { params: { cityLabel: key } });
+  return Array.isArray(data?.codes) ? data.codes : [];
+}
+
+export async function guessOriginIata(defaultIata = 'RIX') {
+  try {
+    const cached = sessionStorage.getItem('ef.originIata');
+    if (cached) return cached;
+    sessionStorage.setItem('ef.originIata', defaultIata);
+    return defaultIata;
+  } catch {
+    return defaultIata;
+  }
+}
+
+// === Event Normalization ===
+
+export function normalizeEvents(payload) {
+  const events = payload?.eventsResults || payload?.results || [];
+
+  return events.map((e, i) => {
+    // Address: SearchAPI gives a string, normalize to array
+    const rawAddr = e?.address || '';
+    const address = Array.isArray(rawAddr) ? rawAddr : (rawAddr ? [rawAddr] : []);
+
+    // Date: SearchAPI gives { day, month } object + duration string
+    const dateObj = e?.date || {};
+    let when = '';
+    if (typeof dateObj === 'string') when = dateObj;
+    else if (dateObj?.when) when = dateObj.when;
+    else if (e?.duration) when = e.duration;
+    else if (dateObj?.day && dateObj?.month) when = `${dateObj.day} ${dateObj.month}`;
+
+    const startDate = dateObj?.startDate || e?.startDate || '';
+    const startISO = /^\d{4}-\d{2}-\d{2}/.test(startDate)
+      ? startDate.slice(0, 10)
+      : parseEventDate(typeof when === 'string' ? when : '');
+
     return {
-      position:e?.position??i+1,
-      title:e?.title||e?.name||`Event #${i+1}`,
-      when:whenTxt,
-      startDate:startISO||'',
-      venue:e?.venue?.name||'',
+      position: e?.position ?? i + 1,
+      title: e?.title || `Event #${i + 1}`,
+      when,
+      startDate: startISO || '',
+      venue: e?.venue?.name || e?.location || '',
       address,
-      city:getCityFromAddress(address),
-      link:e?.link||'',
-      thumbnail:e?.thumbnail||'',
-      description:e?.description||'',
-      ticketInfo:Array.isArray(e?.ticketInfo)?e.ticketInfo:[],
-      eventLocationMap:e?.eventLocationMap||null,
-      venueDetails:e?.venue||null,
-      _raw:e
+      city: getCityFromAddress(address),
+      link: e?.link || '',
+      thumbnail: e?.thumbnail || '',
+      description: e?.description || '',
+      ticketInfo: e?.ticketInfo || e?.offers || [],
+      eventLocationMap: e?.eventLocationMap || e?.event_location_map || null,
+      venueDetails: e?.venue || null,
+      _raw: e,
     };
   });
 }
 
-const airportCache=new Map();
 
-export async function resolveCityToIataList(cityLabel=''){
-  const key=(cityLabel||'').trim();
-  if(!key)return[];
-  if(airportCache.has(key))return airportCache.get(key);
-  const {data}=await axios.get('/api/geo/airports',{params:{cityLabel:key}});
-  const list=Array.isArray(data?.codes)?data.codes:[];
-  airportCache.set(key,list);
-  return list;
+export function extractFlightOptions(data) {
+  if (!data) return [];
+
+  const bestFlights = data.bestFlights || data.best_flights || [];
+  const otherFlights = data.otherFlights || data.other_flights || [];
+
+  if (bestFlights.length || otherFlights.length) {
+    return [...bestFlights, ...otherFlights];
+  }
+
+  return data.results || data.flights || [];
 }
 
-export function extractFlightOptions(d){
-  return (Array.isArray(d?.otherFlights)&&d.otherFlights)||(Array.isArray(d?.results)&&d.results)||(Array.isArray(d?.items)&&d.items)||(Array.isArray(d?.flights)&&d.flights)||[];
+export function hasAnyFlights(data) {
+  if (!data) return false;
+  const best = data.bestFlights || data.best_flights || [];
+  const other = data.otherFlights || data.other_flights || [];
+  return best.length + other.length > 0;
 }
 
-export const hasAnyFlights=d=>extractFlightOptions(d).length>0;
+export function normalizeFlightOption(opt) {
+  const legs = opt?.flights || opt?.legs || [];
+  const firstLeg = legs[0] || {};
+  const lastLeg = legs[legs.length - 1] || firstLeg;
 
-export function getEventTravelDates(evt){
-  const base=(evt?.startDate&&/^\d{4}-\d{2}-\d{2}/.test(evt.startDate))?evt.startDate.slice(0,10):parseWhenToISO(evt?.when||evt?._raw?.date?.when||'');
-  if(!base)return{eventISO:'',departISO:'',returnISO:''};
-  const d=new Date(`${base}T12:00:00`);
-  const before=new Date(d);before.setDate(d.getDate()-1);
-  const after=new Date(d);after.setDate(d.getDate()+1);
-  return{eventISO:base,departISO:iso(before.getFullYear(),before.getMonth()+1,before.getDate()),returnISO:iso(after.getFullYear(),after.getMonth()+1,after.getDate())};
-}
+  const departure = firstLeg.departureAirport || firstLeg.departure_airport || {};
+  const arrival = lastLeg.arrivalAirport || lastLeg.arrival_airport || {};
 
-export function normalizeFlightOption(opt){
-  const legs=Array.isArray(opt?.flights)?opt.flights:(Array.isArray(opt?.legs)?opt.legs:[]);
-  const first=legs[0]||{},last=legs.length?legs[legs.length-1]:first;
-  return{
-    price:opt?.price??opt?.priceTotal??opt?.priceFrom??null,
-    type:opt?.type||(legs.length>1?'Multi-leg':'Trip'),
-    totalDuration:opt?.totalDuration||opt?.duration||legs.reduce((s,l)=>s+(l?.duration||0),0)||undefined,
+  // Build readable departure/arrival time strings
+  const departTime = departure.time
+    ? `${departure.date || ''} ${departure.time}`.trim()
+    : (firstLeg.departureTime || firstLeg.departure_time || '');
+  const arriveTime = arrival.time
+    ? `${arrival.date || ''} ${arrival.time}`.trim()
+    : (lastLeg.arrivalTime || lastLeg.arrival_time || '');
+
+  return {
+    price: opt?.price ?? opt?.priceTotal ?? opt?.price_total ?? null,
+    type: opt?.type || (legs.length > 1 ? 'Multi-leg' : 'Trip'),
+    totalDuration: opt?.totalDuration || opt?.total_duration || opt?.duration || 0,
     legs,
-    fromId:first?.departureAirport?.id||first?.departureAirportCode||'',
-    fromName:first?.departureAirport?.name||'',
-    toId:last?.arrivalAirport?.id||last?.arrivalAirportCode||'',
-    toName:last?.arrivalAirport?.name||'',
-    depart:first?.departureAirport?.time||first?.departureTime||first?.departure||'',
-    arrive:last?.arrivalAirport?.time||last?.arrivalTime||last?.arrival||'',
-    airlines:[...new Set(legs.map(l=>l?.airline).filter(Boolean))],
-    flightNumbers:legs.map(l=>l?.flightNumber).filter(Boolean),
-    travelClass:first?.travelClass||opt?.travelClass||'',
-    emissions:opt?.carbonEmissions||{}
+    fromId: departure.id || '',
+    fromName: departure.name || '',
+    toId: arrival.id || '',
+    toName: arrival.name || '',
+    depart: departTime,
+    arrive: arriveTime,
+    airlines: [...new Set(legs.map(l => l?.airline).filter(Boolean))],
+    flightNumbers: legs.map(l => l?.flightNumber || l?.flight_number).filter(Boolean),
+    travelClass: firstLeg.travelClass || firstLeg.travel_class || '',
+    emissions: opt?.carbonEmissions || opt?.carbon_emissions || {},
   };
 }
 
-export function normalizeHotel(h){
-  return{
-    title:h?.title||'Hotel',
-    thumbnail:h?.thumbnail||'',
-    rating:h?.rating||null,
-    reviews:h?.reviews||null,
-    type:h?.type||'',
-    stars:h?.stars||null,
-    address:h?.address||'',
-    phone:h?.phone||'',
-    website:h?.website||'',
-    gps:h?.gpsCoordinates||null,
-    tags:Array.isArray(h?.serviceOptions)?h.serviceOptions:(Array.isArray(h?.extensions?.crowd)?h.extensions.crowd:[])
+
+export function normalizeHotel(h) {
+  return {
+    title: h?.title || 'Hotel',
+    thumbnail: h?.thumbnail || '',
+    rating: h?.rating || null,
+    reviews: h?.reviews || null,
+    type: h?.type || '',
+    stars: h?.stars || null,
+    address: h?.address || '',
+    phone: h?.phone || '',
+    website: h?.website || '',
+    gps: h?.gpsCoordinates || null,
+    tags: h?.amenities || h?.serviceOptions || [],
   };
 }
 
-export function mapsLinkFromHotel(h){
-  if(h?.gps?.latitude&&h?.gps?.longitude)return`https://www.google.com/maps/search/?api=1&query=${h.gps.latitude},${h.gps.longitude}`;
-  const q=encodeURIComponent(`${h?.title||''} ${h?.address||''}`.trim());
-  return`https://www.google.com/maps/search/?api=1&query=${q}`;
-}
 
-export function suggestTripTitle(evt,arrivalId){
-  const title=evt?.title||evt?.name||'';
-  const city=evt?.city||'';
-  const date=(evt?.startDate||'').toString().slice(0,10);
-  const base=(title&&city)?`${title} — ${city}`:(title||city)||'My Trip';
-  const hints=[];if(arrivalId)hints.push(arrivalId);if(date)hints.push(date);
-  return hints.length?`${base} (${hints.join(' · ')})`:base;
-}
+export function suggestTripTitle(evt, arrivalId) {
+  const title = evt?.title || '';
+  const city = evt?.city || '';
+  const date = (evt?.startDate || '').slice(0, 10);
 
-export async function guessOriginIata(defaultIata='RIX'){
-  try{
-    const k='ef.originIata'; const c=sessionStorage.getItem(k); if(c) return c;
-    const loc=await requestBrowserLocation(); const val=loc?'':defaultIata; sessionStorage.setItem(k,val||defaultIata); return val||defaultIata;
-  }catch{ return defaultIata; }
-}
-
-export function inferCurrencySymbol(data){
-  const url=data?.requestMetadata?.url||'';
-  const curr=(url.match(/curr=([A-Z]{3})/)?.[1])||'EUR';
-  if(curr==='EUR')return '€'; if(curr==='USD')return '$'; if(curr==='GBP')return '£'; if(curr==='NOK')return 'kr';
-  return curr+' ';
+  const base = (title && city) ? `${title} — ${city}` : (title || city || 'My Trip');
+  const hints = [arrivalId, date].filter(Boolean);
+  return hints.length ? `${base} (${hints.join(' · ')})` : base;
 }

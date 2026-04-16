@@ -8,25 +8,30 @@ use Inertia\Inertia;
 
 class SuperAdminController extends Controller
 {
+    private const ROLE_USER = 0;
+    private const ROLE_ADMIN = 1;
+    private const ROLE_SUPER_ADMIN = 2;
+
     public function index(Request $request)
     {
         $users = User::orderBy('role', 'desc')->orderBy('name')->get();
-        $superCount = User::where('role', 2)->count();
-        $me = $request->user();
+        $superAdminCount = User::where('role', self::ROLE_SUPER_ADMIN)->count();
+        $currentUser = $request->user();
 
         return Inertia::render('SuperAdmin/Index', [
-            'users' => $users,
-            'superCount' => $superCount,
-            'meId' => $me?->id,
+            'users'      => $users,
+            'superCount' => $superAdminCount,
+            'meId'       => $currentUser?->id,
         ]);
     }
 
     public function promote(User $user, Request $request)
     {
-        if ((int) $user->role >= 1) {
+        if ((int) $user->role >= self::ROLE_ADMIN) {
             return back()->with('error', "{$user->name} already has admin privileges.");
         }
-        $user->update(['role' => 1]);
+
+        $user->update(['role' => self::ROLE_ADMIN]);
 
         return back()->with('success', "{$user->name} is now an Admin.");
     }
@@ -36,26 +41,27 @@ class SuperAdminController extends Controller
         if ($request->user()->id === $user->id) {
             return back()->with('error', 'You cannot change your own role here.');
         }
-        if ((int) $user->role <= 0) {
+
+        if ((int) $user->role <= self::ROLE_USER) {
             return back()->with('error', "{$user->name} is already a User.");
         }
-        if ((int) $user->role === 2) {
-            $superCount = User::where('role', 2)->count();
-            if ($superCount <= 1) {
-                return back()->with('error', 'Cannot demote the last SuperAdmin.');
-            }
+
+        if ((int) $user->role === self::ROLE_SUPER_ADMIN && $this->isLastSuperAdmin()) {
+            return back()->with('error', 'Cannot demote the last SuperAdmin.');
         }
-        $user->update(['role' => 0]);
+
+        $user->update(['role' => self::ROLE_USER]);
 
         return back()->with('success', "{$user->name} is now a User.");
     }
 
     public function makeSuper(User $user)
     {
-        if ((int) $user->role === 2) {
+        if ((int) $user->role === self::ROLE_SUPER_ADMIN) {
             return back()->with('error', "{$user->name} is already a SuperAdmin.");
         }
-        $user->update(['role' => 2]);
+
+        $user->update(['role' => self::ROLE_SUPER_ADMIN]);
 
         return back()->with('success', "{$user->name} is now a SuperAdmin.");
     }
@@ -65,15 +71,22 @@ class SuperAdminController extends Controller
         if ($request->user()->id === $user->id) {
             return back()->with('error', 'You cannot remove your own SuperAdmin role.');
         }
-        if ((int) $user->role !== 2) {
+
+        if ((int) $user->role !== self::ROLE_SUPER_ADMIN) {
             return back()->with('error', "{$user->name} is not a SuperAdmin.");
         }
-        $superCount = User::where('role', 2)->count();
-        if ($superCount <= 1) {
+
+        if ($this->isLastSuperAdmin()) {
             return back()->with('error', 'Cannot remove the last SuperAdmin.');
         }
-        $user->update(['role' => 1]);
+
+        $user->update(['role' => self::ROLE_ADMIN]);
 
         return back()->with('success', "{$user->name} is no longer a SuperAdmin.");
+    }
+
+    private function isLastSuperAdmin(): bool
+    {
+        return User::where('role', self::ROLE_SUPER_ADMIN)->count() <= 1;
     }
 }

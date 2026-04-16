@@ -4,85 +4,76 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\SearchLog;
-use App\Services\HasDataClient;
+use App\Services\SearchApiClient;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 
 class EventController extends Controller
 {
-    public function search(Request $request, HasDataClient $hasData)
+    public function search(Request $request, SearchApiClient $searchApi)
     {
-        $q = trim((string) $request->input('q', ''));
-        if ($q === '') {
+        $query = trim((string) $request->input('q', ''));
+
+        if ($query === '') {
             return response()->json(['error' => 'q is required'], 422);
         }
 
+        $countryCode = $this->normalizeCountryCode($request->input('gl', 'uk'));
+        $language = strtolower($request->input('hl', 'en'));
+
         $params = [
-            'q' => $q,
-            'location' => $request->input('location', 'United Kingdom'),
-            'gl' => $this->normalizeGl($request->input('gl', 'uk')),
-            'hl' => strtolower($request->input('hl', 'en')),
+            'q' => $query,
+            'location' => $request->input('location', ''),
+            'gl' => $countryCode,
+            'hl' => $language,
             'start' => (int) $request->input('start', 0),
         ];
+
         if ($request->filled('when')) {
             $params['htichips'] = $request->input('when');
         }
 
-        $normalized = $this->normalizeParams($params);
-
-        // simple search log (kept)
         SearchLog::query()->create([
-            'user_id' => optional($request->user())->id,
-            'query' => $q,
+            'user_id' => $request->user()?->id,
+            'query' => $query,
             'ip' => $request->ip(),
         ]);
 
         try {
-            $live = $hasData->events($normalized);
+            $results = $searchApi->events($params);
 
-            // make sure response shape is predictable
-            if (empty($live)) {
-                $live = ['eventsResults' => [], 'results' => [], 'items' => []];
-            }
+            $results = $this->normalizeEventKeys($results);
 
-            $live['_meta'] = [
-                'from_cache' => false,
-                'refreshing' => false,
-                'status' => 'live',
-                'fetched_at' => now()->toIso8601String(),
-            ];
-
-            return response()->json($live);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'eventsResults' => [],
-                'results' => [],
-                'items' => [],
-                '_meta' => [
-                    'from_cache' => false,
-                    'refreshing' => false,
-                    'status' => 'error',
-                    'error' => config('app.debug') ? $e->getMessage() : 'Search failed',
-                ],
-            ], 500);
+            return response()->json($results);
+        } catch (\Throwable) {
+            return response()->json(['error' => 'Search failed'], 500);
         }
     }
 
-    private function normalizeParams(array $params): array
+    /**
+     * Normalize country code: SearchAPI expects ISO 3166-1 alpha-2,
+     * but 'uk' is commonly passed instead of the correct 'gb'.
+     */
+    private function normalizeCountryCode(string $countryCode): string
     {
-        $p = $params;
-        $p['gl'] = $this->normalizeGl(Arr::get($p, 'gl', 'uk'));
-        $p['hl'] = strtolower(Arr::get($p, 'hl', 'en'));
-        $p['q'] = trim((string) Arr::get($p, 'q', ''));
-        ksort($p);
+        $countryCode = strtolower($countryCode);
 
-        return $p;
+        return ($countryCode === 'uk') ? 'gb' : $countryCode;
     }
 
-    private function normalizeGl(string $gl): string
+    /**
+     * Remap SearchAPI's events_results key to the camelCase eventsResults
+     * that the frontend expects. Also handle the rare 'events' key as a safety fallback.
+     */
+    private function normalizeEventKeys(array $results): array
     {
-        $gl = strtolower($gl);
+        if (isset($results['events_results']) && ! isset($results['eventsResults'])) {
+            $results['eventsResults'] = $results['events_results'];
+        }
 
-        return in_array($gl, ['uk', 'gb'], true) ? 'gb' : $gl;
+        if (isset($results['events']) && ! isset($results['eventsResults'])) {
+            $results['eventsResults'] = $results['events'];
+        }
+
+        return $results;
     }
 }

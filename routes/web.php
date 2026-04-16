@@ -3,8 +3,6 @@
 use App\Http\Controllers\AdminGeoApiController;
 use App\Http\Controllers\AdminStatsApiController;
 use App\Http\Controllers\AdminStatsController;
-use App\Http\Controllers\Api\EventController;
-use App\Http\Controllers\Api\TravelController;
 use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\BookmarkedTripController;
 use App\Http\Controllers\ProfileController;
@@ -41,10 +39,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/bookmarks', [BookmarkedTripController::class, 'store'])->name('bookmarks.store');
     Route::delete('/bookmarks/{id}', [BookmarkedTripController::class, 'destroy'])->name('bookmarks.destroy');
 });
-
-Route::get('/api/events', [EventController::class, 'search']);
-Route::get('/api/travel/flights', [TravelController::class, 'flights']);
-Route::get('/api/travel/hotels', [TravelController::class, 'hotels']);
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

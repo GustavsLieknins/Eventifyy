@@ -32,15 +32,18 @@ export default memo(function FlightList({ flights, buildFlightsLink, fmtPrice, f
               {airlines && <Badge>{airlines}</Badge>}
             </div>
 
-            {f.legs?.map((leg, idx) => (
+            {f.legs?.map((leg, idx) => {
+              const dep = leg?.departureAirport || leg?.departure_airport || {};
+              const arr = leg?.arrivalAirport || leg?.arrival_airport || {};
+              return (
               <div key={idx} className="leg">
                 <div className="leg__line">
-                  <strong>{leg?.departureAirport?.id}</strong> ({leg?.departureAirport?.time})
+                  <strong>{dep.id}</strong> ({dep.time})
                   {' '}→{' '}
-                  <strong>{leg?.arrivalAirport?.id}</strong> ({leg?.arrivalAirport?.time})
+                  <strong>{arr.id}</strong> ({arr.time})
                 </div>
                 <div className="leg__meta">
-                  {leg?.airline} • {leg?.flightNumber} • {leg?.travelClass}
+                  {leg?.airline} • {leg?.flightNumber || leg?.flight_number} • {leg?.travelClass || leg?.travel_class}
                   {leg?.legroom ? ` • ${leg.legroom} legroom` : ''}
                 </div>
                 {!!(leg?.extensions?.length) && (
@@ -49,7 +52,8 @@ export default memo(function FlightList({ flights, buildFlightsLink, fmtPrice, f
                   </div>
                 )}
               </div>
-            ))}
+            );
+            })}
 
             {(f?.emissions?.thisFlight || typeof f?.emissions?.differencePercent === 'number') && (
               <div className="row row--wrap mt-6">

@@ -35,18 +35,6 @@ return [
         ],
     ],
 
-    'hasdata' => [
-        'base_url' => env('HASDATA_BASE_URL', 'https://api.hasdata.com'),
-        'api_key'  => env('HASDATA_API_KEY'),
-
-        'endpoints' => [
-            'events'      => env('HASDATA_EVENTS_PATH'),
-            'flights'     => env('HASDATA_FLIGHTS_PATH'),
-            'maps_search' => env('HASDATA_MAPS_SEARCH_PATH'),
-        ],
-    ],
-    
-
     'github' => [
         'client_id'     => env('GITHUB_CLIENT_ID'),
         'client_secret' => env('GITHUB_CLIENT_SECRET'),
@@ -58,6 +46,20 @@ return [
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect'      => env('GOOGLE_REDIRECT_URI'),
     ],
-    
+
+    'searchapi' => [
+        'base_url' => env('SEARCHAPI_BASE_URL', 'https://www.searchapi.io/api/v1'),
+        'key'      => env('SEARCHAPI_KEY', ''),
+    ],
+
+    'groq' => [
+        'api_key' => env('GROQ_API_KEY', ''),
+    ],
+
+    'travel' => [
+        'default_departure_iata' => env('DEFAULT_DEPARTURE_IATA', 'RIX'),
+        'default_currency'       => env('DEFAULT_CURRENCY', 'EUR'),
+        'google_hl'              => env('GOOGLE_HL', 'en'),
+    ],
 
 ];

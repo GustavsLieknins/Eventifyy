@@ -1,39 +1,67 @@
 import React from 'react';
 
-export default function SearchHeader(props) {
-  const {
-    q, setQ,
-    location, setLocation,
-    when, setWhen,
-    loading,
-    showSuggestions,
-    onSubmitSearch,
-    onClear,
-    runQuickSearch,
-  } = props;
+// Quick search chip data (kept here so it's easy to edit)
+const ARTIST_CHIPS = ['Korn', 'Lady Gaga', 'Morgenshtern', 'Linkin Park'];
 
+const DATE_CHIPS = [
+  { label: 'Today', value: 'date:today' },
+  { label: 'This Weekend', value: 'date:weekend' },
+  { label: 'Next Week', value: 'date:next_week' },
+];
+
+const CITY_CHIPS = ['London', 'Riga', 'Stockholm', 'Manchester'];
+
+const GENRE_CHIPS = ['rock', 'pop', 'stand-up', 'festival'];
+
+/**
+ * Search bar + landing page suggestions.
+ * When showSuggestions is true, displays quick-search chips below the form.
+ */
+export default function SearchHeader({
+  q,
+  setQ,
+  location,
+  setLocation,
+  when,
+  setWhen,
+  loading,
+  showSuggestions,
+  onSubmitSearch,
+  onClear,
+  runQuickSearch,
+}) {
   return (
     <header className={`search-header ${showSuggestions ? 'is-landing' : ''}`}>
       <div className="search-inner">
         <h1 className="app-name-title">Eventify</h1>
 
+        {/* Search form */}
         <form
           className="actions-wrapper"
-          onSubmit={(e) => onSubmitSearch?.(e, q)}
+          onSubmit={(event) => onSubmitSearch?.(event, q)}
         >
           <div className="input-group">
+            {/* Main search input */}
             <input
               value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search artists, venues, genres…"
+              onChange={(event) => setQ(event.target.value)}
+              placeholder="Search artists, venues, genres..."
               className="input-search"
               aria-label="Search query"
               name="SearchQuery"
             />
-            <input type="hidden" value={location} onChange={(e) => setLocation(e.target.value)} />
+
+            {/* Hidden location field */}
+            <input
+              type="hidden"
+              value={location}
+              onChange={(event) => setLocation(event.target.value)}
+            />
+
+            {/* Date filter dropdown */}
             <select
               value={when}
-              onChange={(e) => setWhen(e.target.value)}
+              onChange={(event) => setWhen(event.target.value)}
               className="input-when"
               aria-label="When"
             >
@@ -50,6 +78,7 @@ export default function SearchHeader(props) {
             </select>
           </div>
 
+          {/* Search + Clear buttons */}
           <div className="actions-buttons">
             <button
               type="submit"
@@ -57,45 +86,49 @@ export default function SearchHeader(props) {
               disabled={loading}
               aria-busy={loading ? 'true' : 'false'}
             >
-              {loading ? 'Searching…' : 'Search'}
+              {loading ? 'Searching...' : 'Search'}
             </button>
+
             <button type="button" className="btn" onClick={onClear} disabled={loading}>
               Clear
             </button>
           </div>
         </form>
 
+        {/* Landing page: quick search suggestions */}
         {showSuggestions && (
           <section className="landing-suggest in-header">
             <div className="suggest-wrap">
+
+              {/* Hero text */}
               <div className="suggest-hero">
                 <div className="hero-eyebrow">Getting started</div>
                 <h2 className="hero-title">Search concerts & events</h2>
                 <p className="hero-sub">Pick a quick chip or just type above.</p>
               </div>
 
+              {/* Artist chips */}
               <div className="chip-row big mb-14">
-                {['Korn','Lady Gaga','Morgenshtern','Linkin Park'].map((name) => (
+                {ARTIST_CHIPS.map((artistName) => (
                   <button
-                    key={name}
+                    key={artistName}
                     className="chip chip--pill chip--ghost chip--lg"
-                    onClick={() => runQuickSearch?.(name, '')}
+                    onClick={() => runQuickSearch?.(artistName, '')}
                     type="button"
                   >
-                    {name}
+                    {artistName}
                   </button>
                 ))}
               </div>
 
+              {/* Suggestion cards grid */}
               <div className="suggest-grid">
+
+                {/* By date */}
                 <div className="suggest-card">
                   <div className="suggest-head">By date</div>
                   <div className="chip-row">
-                    {[
-                      { label: 'Today', value: 'date:today' },
-                      { label: 'This Weekend', value: 'date:weekend' },
-                      { label: 'Next Week', value: 'date:next_week' },
-                    ].map(({label, value}) => (
+                    {DATE_CHIPS.map(({ label, value }) => (
                       <button
                         key={value}
                         className="chip chip--pill chip--ghost"
@@ -106,42 +139,45 @@ export default function SearchHeader(props) {
                       </button>
                     ))}
                   </div>
-                  <div className="hint">Sets the “When” filter for you.</div>
+                  <div className="hint">Sets the "When" filter for you.</div>
                 </div>
 
+                {/* By city */}
                 <div className="suggest-card">
                   <div className="suggest-head">Cities</div>
                   <div className="chip-row">
-                    {['London','Riga','Stockholm','Manchester'].map((c) => (
+                    {CITY_CHIPS.map((cityName) => (
                       <button
-                        key={c}
+                        key={cityName}
                         className="chip chip--pill chip--ghost"
-                        onClick={() => runQuickSearch?.('concert', '', c)}
+                        onClick={() => runQuickSearch?.('concert', '', cityName)}
                         type="button"
                       >
-                        {c}
+                        {cityName}
                       </button>
                     ))}
                   </div>
                   <div className="hint">Searches events around the city.</div>
                 </div>
 
+                {/* By genre */}
                 <div className="suggest-card">
                   <div className="suggest-head">Ideas</div>
                   <div className="chip-row">
-                    {['rock','pop','stand-up','festival'].map((k) => (
+                    {GENRE_CHIPS.map((genre) => (
                       <button
-                        key={k}
+                        key={genre}
                         className="chip chip--pill chip--ghost"
-                        onClick={() => runQuickSearch?.(k)}
+                        onClick={() => runQuickSearch?.(genre)}
                         type="button"
                       >
-                        {k}
+                        {genre}
                       </button>
                     ))}
                   </div>
                   <div className="hint">Quick genre kicks to get you going.</div>
                 </div>
+
               </div>
             </div>
           </section>

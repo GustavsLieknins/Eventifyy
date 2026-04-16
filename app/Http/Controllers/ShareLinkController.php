@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BookmarkedTrip;
 use App\Models\ShareLink;
+use App\Models\ShareLinkVisit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -19,17 +19,12 @@ class ShareLinkController extends Controller
 
         $user = $request->user();
 
-        $trip = BookmarkedTrip::query()
-            ->where('id', $validated['trip_id'])
-            ->where('user_id', $user->id)
-            ->firstOrFail();
+        $trip = $user->bookmarkedTrips()->findOrFail($validated['trip_id']);
 
         $existing = ShareLink::query()
             ->where('trip_id', $trip->id)
             ->where('user_id', $user->id)
-            ->where(function ($q) {
-                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
-            })
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
             ->orderByDesc('id')
             ->first();
 
@@ -44,10 +39,9 @@ class ShareLinkController extends Controller
             $slug = Str::lower(Str::random(10));
         } while (ShareLink::where('slug', $slug)->exists());
 
-        $expiresAt = null;
-        if (!empty($validated['expires_in'])) {
-            $expiresAt = now()->addMinutes((int) $validated['expires_in']);
-        }
+        $expiresAt = ! empty($validated['expires_in'])
+            ? now()->addMinutes((int) $validated['expires_in'])
+            : null;
 
         $link = ShareLink::create([
             'slug' => $slug,
@@ -64,21 +58,17 @@ class ShareLinkController extends Controller
 
     public function show(Request $request, string $slug)
     {
-        $link = ShareLink::with(['trip'])
-            ->where('slug', $slug)
-            ->firstOrFail();
+        $link = ShareLink::with('trip')->where('slug', $slug)->firstOrFail();
 
         if ($link->isExpired()) {
             abort(410, 'This link has expired.');
         }
 
-        $country = $this->countryFromRequest($request);
-
-        \DB::transaction(function () use ($link, $request, $country) {
-            \App\Models\ShareLinkVisit::create([
+        \DB::transaction(function () use ($link, $request) {
+            ShareLinkVisit::create([
                 'share_link_id' => $link->id,
-                'user_id' => optional($request->user())->id,
-                'country' => $country,
+                'user_id' => $request->user()?->id,
+                'country' => $this->countryFromRequest($request),
                 'ip' => $request->ip(),
                 'user_agent' => substr((string) $request->userAgent(), 0, 1024),
             ]);
@@ -106,14 +96,15 @@ class ShareLinkController extends Controller
 
     private function countryFromRequest(Request $request): ?string
     {
-        foreach (['CF-IPCountry', 'X-Country-Code', 'X-Geo-Country', 'X-App-Country'] as $h) {
-            $v = $request->headers->get($h);
-            if ($v && strlen($v) === 2) {
-                return strtoupper($v);
+        foreach (['CF-IPCountry', 'X-Country-Code', 'X-Geo-Country', 'X-App-Country'] as $header) {
+            $value = $request->headers->get($header);
+            if ($value && strlen($value) === 2) {
+                return strtoupper($value);
             }
         }
-        $p = (string) $request->input('country', '');
 
-        return $p && strlen($p) === 2 ? strtoupper($p) : null;
+        $param = (string) $request->input('country', '');
+
+        return ($param && strlen($param) === 2) ? strtoupper($param) : null;
     }
 }

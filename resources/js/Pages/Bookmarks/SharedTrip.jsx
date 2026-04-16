@@ -26,7 +26,8 @@ export default function SharedTrip({ slug, title, trip, meta }) {
 
   const buildEmbed = useCallback(()=>{
     const f = trip?.flights?.[0], h = trip?.hotels?.[0];
-    const origin = f?.fromId ? `${f.fromId} Airport` : (f?.legs?.[0]?.departureAirport?.name || '');
+    const firstLeg = f?.legs?.[0] || {};
+    const origin = f?.fromId ? `${f.fromId} Airport` : ((firstLeg.departureAirport || firstLeg.departure_airport)?.name || '');
     let destination = '';
     if (h?.gps?.latitude && h?.gps?.longitude) destination = `${h.gps.latitude},${h.gps.longitude}`;
     else if (h?.title || h?.address) destination = [h.title, h.address].filter(Boolean).join(' ');
@@ -84,19 +85,23 @@ export default function SharedTrip({ slug, title, trip, meta }) {
                     {!!f.airlines?.length && <Badge>{f.airlines.join(' + ')}</Badge>}
                   </div>
 
-                  {f.legs?.map((leg,i)=>(
+                  {f.legs?.map((leg,i)=>{
+                    const dep = leg?.departureAirport || leg?.departure_airport || {};
+                    const arr = leg?.arrivalAirport || leg?.arrival_airport || {};
+                    return (
                     <div key={i} className="leg">
                       <div className="leg__line">
-                        <strong>{leg?.departureAirport?.id}</strong> ({leg?.departureAirport?.time})
+                        <strong>{dep.id}</strong> ({dep.time})
                         {' '}→{' '}
-                        <strong>{leg?.arrivalAirport?.id}</strong> ({leg?.arrivalAirport?.time})
+                        <strong>{arr.id}</strong> ({arr.time})
                       </div>
                       <div className="leg__meta">
-                        {leg?.airline} • {leg?.flightNumber} • {leg?.travelClass}
+                        {leg?.airline} • {leg?.flightNumber || leg?.flight_number} • {leg?.travelClass || leg?.travel_class}
                         {leg?.legroom ? ` • ${leg.legroom} legroom` : ''}
                       </div>
                     </div>
-                  ))}
+                  );
+                  })}
                 </Card>
               ))}
             </div>

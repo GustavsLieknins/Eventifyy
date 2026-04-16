@@ -43,14 +43,17 @@ export default function TripGlobeArc({ trip, ninjasKey = import.meta.env.VITE_NI
       if (!trip) return;
 
       const flight = trip?.flights?.[0] || null;
-      const fromIata = flight?.fromId || flight?.legs?.[0]?.departureAirport?.id || '';
-      const toIata   = flight?.toId   || flight?.legs?.slice(-1)?.[0]?.arrivalAirport?.id || '';
+      const firstLeg = flight?.legs?.[0] || {};
+      const lastLeg  = flight?.legs?.slice(-1)?.[0] || {};
+      const fromIata = flight?.fromId || (firstLeg.departureAirport || firstLeg.departure_airport)?.id || '';
+      const toIata   = flight?.toId   || (lastLeg.arrivalAirport || lastLeg.arrival_airport)?.id || '';
 
       let from = null, to = null;
 
       if (fromIata && ninjasKey) from = await fetchIata(fromIata, ninjasKey);
-      if (!from && flight?.legs?.[0]?.departureAirport?.lat && flight?.legs?.[0]?.departureAirport?.lon) {
-        from = { lat: toNum(flight.legs[0].departureAirport.lat), lng: toNum(flight.legs[0].departureAirport.lon) };
+      const depAirport = firstLeg.departureAirport || firstLeg.departure_airport || {};
+      if (!from && depAirport.lat && depAirport.lon) {
+        from = { lat: toNum(depAirport.lat), lng: toNum(depAirport.lon) };
       }
 
       const hotel = trip?.hotels?.[0];

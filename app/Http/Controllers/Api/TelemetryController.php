@@ -10,13 +10,11 @@ class TelemetryController extends Controller
 {
     public function visit(Request $request)
     {
-        $country = $this->countryFromRequest($request);
-
         VisitLog::create([
-            'user_id' => optional($request->user())->id,
+            'user_id' => $request->user()?->id,
             'path' => (string) $request->input('path', $request->path()),
             'referrer' => (string) $request->input('referrer', $request->headers->get('Referer')),
-            'country' => $country,
+            'country' => $this->countryFromRequest($request),
             'ip' => $request->ip(),
             'user_agent' => substr((string) $request->userAgent(), 0, 1024),
             'meta' => $request->input('meta', null),
@@ -31,17 +29,15 @@ class TelemetryController extends Controller
 
     private function countryFromRequest(Request $request): ?string
     {
-        foreach (['CF-IPCountry', 'X-Country-Code', 'X-Geo-Country', 'X-App-Country'] as $h) {
-            $v = $request->headers->get($h);
-            if ($v && strlen($v) === 2) {
-                return strtoupper($v);
+        foreach (['CF-IPCountry', 'X-Country-Code', 'X-Geo-Country', 'X-App-Country'] as $header) {
+            $value = $request->headers->get($header);
+            if ($value && strlen($value) === 2) {
+                return strtoupper($value);
             }
         }
-        $p = (string) $request->input('country', '');
-        if ($p && strlen($p) === 2) {
-            return strtoupper($p);
-        }
 
-        return null;
+        $param = (string) $request->input('country', '');
+
+        return ($param && strlen($param) === 2) ? strtoupper($param) : null;
     }
 }

@@ -24,19 +24,15 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * Lietotāja datu glabāšanas funkcija, priekš reģistrācijas.
+     * Handle an incoming registration request.
      */
     public function store(Request $request): RedirectResponse
     {
-        // Lietotāja datu glabāšanas validācija
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
-
-
- 
 
         $user = User::create([
             'name' => $request->name,

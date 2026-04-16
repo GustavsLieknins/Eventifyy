@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ShareLink extends Model
 {
@@ -14,6 +15,16 @@ class ShareLink extends Model
     public function trip(): BelongsTo
     {
         return $this->belongsTo(BookmarkedTrip::class, 'trip_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function visits(): HasMany
+    {
+        return $this->hasMany(ShareLinkVisit::class);
     }
 
     public function isExpired(): bool

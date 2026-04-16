@@ -54,15 +54,8 @@ class SocialAuthController extends Controller
             ]);
         }
 
-        // (Optional) store provider info if you want; add columns first if needed.
-        // $user->update([
-        //     'provider' => $provider,
-        //     'provider_id' => $socialUser->getId(),
-        //     'avatar' => $avatar,
-        // ]);
-
         Auth::login($user, remember: true);
 
-        return redirect()->intended('/dashboard'); // or your home route
+        return redirect()->intended('/dashboard');
     }
 }

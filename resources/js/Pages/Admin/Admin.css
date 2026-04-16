@@ -39,14 +39,9 @@
 .admin-page {
   min-height: calc(100vh - 64px);
   color: var(--ef-text);
-  background: radial-gradient(
-      1200px 900px at 15% -10%,
-      #15306e 0%,
-      transparent 60%
-    ),
-    radial-gradient(1400px 900px at 110% 10%, #0a2d57 0%, transparent 55%),
-    linear-gradient(180deg, var(--ef-bg-1), var(--ef-bg-2) 45%, var(--ef-bg-3));
+  background: transparent;
   overflow-x: hidden;
+  overflow-y: auto;
   position: relative;
   isolation: isolate;
 }
@@ -583,11 +578,6 @@
     font-size: 0.9rem;
   }
 }
-html, body { overflow-x: hidden; }
-
-body {
-  padding-top: calc(var(--ef-nav-h, 56px) + env(safe-area-inset-top));
-}
 
 @media (max-width: 560px) {
   .search-header { width: 100% !important; }
@@ -602,23 +592,6 @@ body {
 
 
 
-html { background: #0b1330; } 
-
-html, body {
-  min-height: 100dvh;      
-  height: auto;           
-  overflow-x: hidden;
-}
-
-body::before {
-  top: calc(-50dvh - env(safe-area-inset-top));
-  bottom: calc(-50dvh - env(safe-area-inset-bottom));
-  left: 0;
-  right: 0;
-
-  background-size: 100% 220dvh;    
-  background-attachment: scroll;
-}
 
 .main-wrapper {
   padding-bottom: max(16px, env(safe-area-inset-bottom));
@@ -626,7 +599,4 @@ body::before {
 
 :root {
   --viewport-h: 100dvh;
-}
-@supports (overscroll-behavior-y: contain) {
-  body { overscroll-behavior-y: contain; }
 }
