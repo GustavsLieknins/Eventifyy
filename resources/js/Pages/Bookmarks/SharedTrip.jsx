@@ -1,7 +1,41 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { Head } from '@inertiajs/react';
 import './Bookmarks.css';
 import useVisitBeacon from '@/Shared/useVisitBeacon';
+import { fmtDuration } from '../Dashboard/utils';
+
+
+// Build a destination string for the map embed.
+// Prefers hotel GPS, then hotel title/address, then the arrival airport.
+function buildDestination(flight, hotel) {
+  if (hotel?.gps?.latitude && hotel?.gps?.longitude) {
+    return `${hotel.gps.latitude},${hotel.gps.longitude}`;
+  }
+  if (hotel?.title || hotel?.address) {
+    return [hotel?.title, hotel?.address].filter(Boolean).join(' ');
+  }
+  if (flight?.toId) {
+    return `${flight.toId} Airport`;
+  }
+  return '';
+}
+
+function buildMapEmbedUrl(trip) {
+  const flight = trip?.flights?.[0];
+  const hotel = trip?.hotels?.[0];
+  const firstLeg = flight?.legs?.[0] || {};
+  const departureAirport = firstLeg.departureAirport || firstLeg.departure_airport;
+
+  const origin = flight?.fromId
+    ? `${flight.fromId} Airport`
+    : (departureAirport?.name || '');
+  const destination = buildDestination(flight, hotel);
+
+  if (!origin || !destination) return null;
+
+  const query = encodeURIComponent(`${origin} to ${destination}`);
+  return `https://www.google.com/maps?q=${query}&output=embed`;
+}
 
 const Badge = ({children, tone='glass'}) => (
   <span className={`ui-badge ui-badge--${tone}`}>{children}</span>
@@ -18,26 +52,8 @@ const Card = ({children}) => <section className="ui-card">{children}</section>;
 
 export default function SharedTrip({ slug, title, trip, meta }) {
   useVisitBeacon();
-  const fmtDuration = useCallback((mins)=>{
-    if (!mins || isNaN(mins)) return '';
-    const h = Math.floor(mins/60), m = mins%60;
-    return `${h?`${h}h`:''}${h&&m?' ':''}${m?`${m}m`:''}`;
-  },[]);
 
-  const buildEmbed = useCallback(()=>{
-    const f = trip?.flights?.[0], h = trip?.hotels?.[0];
-    const firstLeg = f?.legs?.[0] || {};
-    const origin = f?.fromId ? `${f.fromId} Airport` : ((firstLeg.departureAirport || firstLeg.departure_airport)?.name || '');
-    let destination = '';
-    if (h?.gps?.latitude && h?.gps?.longitude) destination = `${h.gps.latitude},${h.gps.longitude}`;
-    else if (h?.title || h?.address) destination = [h.title, h.address].filter(Boolean).join(' ');
-    else if (f?.toId) destination = `${f.toId} Airport`;
-    if (!origin || !destination) return null;
-    const q = encodeURIComponent(`${origin} to ${destination}`);
-    return `https://www.google.com/maps?q=${q}&output=embed`;
-  }, [trip]);
-
-  const mapUrl = buildEmbed();
+  const mapUrl = buildMapEmbedUrl(trip);
 
   return (
     <div className="page">

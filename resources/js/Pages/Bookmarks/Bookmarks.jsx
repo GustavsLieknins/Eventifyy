@@ -188,46 +188,34 @@ export default function Bookmarks({ trips: initialTrips }) {
   // =============================================
 
   useEffect(() => {
-    let frameId;
-    let attempts = 0;
-
-    function checkForRelayToast() {
-      attempts += 1;
-
-      try {
-        const raw = sessionStorage.getItem(RELAY_KEY);
-
-        if (raw) {
-          const data = JSON.parse(raw);
-          const now = Date.now();
-
-          // Expired? Remove it
-          if (data.until && now > data.until) {
-            sessionStorage.removeItem(RELAY_KEY);
-            return;
-          }
-
-          // Ready to show? (respects notBefore delay)
-          const isReady = !data._shown && (!data.notBefore || now >= data.notBefore);
-
-          if (isReady) {
-            pushToast({ title: data.title || data.message || 'Done', tone: data.tone || 'ok', ttl: data.ttl || 4800 });
-            data._shown = true;
-            sessionStorage.setItem(RELAY_KEY, JSON.stringify(data));
-          }
-        }
-      } catch {
-        // sessionStorage might not be available
-      }
-
-      // Keep checking for up to 120 animation frames
-      if (attempts < 120) {
-        frameId = requestAnimationFrame(checkForRelayToast);
-      }
+    let data;
+    try {
+      const raw = sessionStorage.getItem(RELAY_KEY);
+      if (!raw) return;
+      data = JSON.parse(raw);
+    } catch {
+      return;
     }
 
-    frameId = requestAnimationFrame(checkForRelayToast);
-    return () => cancelAnimationFrame(frameId);
+    const now = Date.now();
+
+    if (data.until && now > data.until) {
+      sessionStorage.removeItem(RELAY_KEY);
+      return;
+    }
+
+    const showToast = () => {
+      pushToast({
+        title: data.title || data.message || 'Done',
+        tone: data.tone || 'ok',
+        ttl: data.ttl || 4800,
+      });
+      sessionStorage.removeItem(RELAY_KEY);
+    };
+
+    const delay = data.notBefore ? Math.max(0, data.notBefore - now) : 0;
+    const timer = setTimeout(showToast, delay);
+    return () => clearTimeout(timer);
   }, []);
 
 
