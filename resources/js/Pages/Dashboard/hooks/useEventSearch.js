@@ -18,43 +18,28 @@ export default function useEventSearch(pushToast) {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [lastSearchTerm, setLastSearchTerm] = useState('');
-  const [resultStart, setResultStart] = useState(0);
 
   // Holds the AbortController for the current in-flight request
   const abortControllerRef = useRef(null);
 
-  // Clear results and reset pagination
-  function resetResults() {
-    setEventResults([]);
-    setResultStart(0);
-  }
-
   /**
    * Main search function.
    *
-   * @param {boolean} isNewSearch - true = fresh search, false = "load more"
    * @param {object} overrides - optional overrides for search params
    */
-  async function searchEvents(isNewSearch = true, overrides = {}) {
-    // Figure out what to search for (use overrides or current state)
+  async function searchEvents(overrides = {}) {
     const term = (overrides.searchTerm ?? searchTerm ?? '').trim();
     const dateFilter = overrides.whenFilter ?? whenFilter;
     const location = overrides.locationFilter ?? (locationFilter || DEFAULT_EVENT_LOCATION);
-    const startIndex = isNewSearch ? 0 : (overrides.start ?? resultStart);
 
-    // Don't search if there's nothing to search for
     if (!term) {
       pushToast({ title: 'Type something to search', tone: 'warn' });
       return;
     }
 
-    // Update UI state
     setLastSearchTerm(term);
     setHasSearched(true);
-
-    if (isNewSearch) {
-      resetResults();
-    }
+    setEventResults([]);
 
     // Abort any in-flight request before starting a new one
     if (abortControllerRef.current) {
@@ -73,29 +58,11 @@ export default function useEventSearch(pushToast) {
           when: dateFilter,
           gl: DEFAULT_GL,
           hl: DEFAULT_HL,
-          start: startIndex,
         },
         signal: controller.signal,
       });
 
-      const newEvents = normalizeEvents(data);
-
-      if (isNewSearch) {
-        // Replace all results
-        setEventResults(newEvents);
-      } else {
-        // Append only events we don't already have (deduplicate by title)
-        setEventResults((previousEvents) => {
-          const existingTitles = new Set(previousEvents.map((event) => event.title));
-          const uniqueNewEvents = newEvents.filter((event) => !existingTitles.has(event.title));
-
-          if (uniqueNewEvents.length === 0) {
-            pushToast({ title: 'No more results', tone: 'info' });
-          }
-
-          return [...previousEvents, ...uniqueNewEvents];
-        });
-      }
+      setEventResults(normalizeEvents(data));
     } catch (error) {
       if (axios.isCancel(error)) return;
       const errorMessage = error?.response?.data?.error || error?.message || 'Search failed';
@@ -109,7 +76,6 @@ export default function useEventSearch(pushToast) {
 
   /**
    * Quick search from the landing page chips.
-   * Sets the inputs and immediately fires a search.
    */
   async function runQuickSearch(term = '', dateFilter = '', city = '') {
     const location = city ? `${city}, ${DEFAULT_EVENT_LOCATION}` : DEFAULT_EVENT_LOCATION;
@@ -118,21 +84,11 @@ export default function useEventSearch(pushToast) {
     setWhenFilter(dateFilter || '');
     setLocationFilter(city ? location : '');
 
-    await searchEvents(true, {
+    await searchEvents({
       searchTerm: term,
       whenFilter: dateFilter || '',
       locationFilter: location,
     });
-  }
-
-  /**
-   * Load more results (pagination).
-   * Fetches the next page of results and appends them.
-   */
-  async function loadMore() {
-    const nextStart = resultStart + 10;
-    setResultStart(nextStart);
-    await searchEvents(false, { start: nextStart });
   }
 
   /**
@@ -142,7 +98,7 @@ export default function useEventSearch(pushToast) {
     setSearchTerm('');
     setLocationFilter('');
     setWhenFilter('');
-    resetResults();
+    setEventResults([]);
     setHasSearched(false);
     setLastSearchTerm('');
   }
@@ -160,7 +116,6 @@ export default function useEventSearch(pushToast) {
     // Actions
     searchEvents,
     runQuickSearch,
-    loadMore,
     clearSearch,
   };
 }

@@ -126,19 +126,6 @@ export default function Dashboard() {
                   onSelect={() => travel.openEventTravel(event)}
                 />
               ))}
-
-              {/* Load more button */}
-              {search.eventResults.length > 0 && (
-                <div className="load-more">
-                  <button
-                    disabled={search.isSearching}
-                    onClick={search.loadMore}
-                    className="btn"
-                  >
-                    {search.isSearching ? 'Loading...' : 'Load more'}
-                  </button>
-                </div>
-              )}
             </>
           )}
         </main>

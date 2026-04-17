@@ -10,6 +10,14 @@ use Inertia\Inertia;
 
 class ShareLinkController extends Controller
 {
+    // Common CDN/proxy country headers, in order of preference
+    private const COUNTRY_HEADERS = [
+        'CF-IPCountry',
+        'X-Country-Code',
+        'X-Geo-Country',
+        'X-App-Country',
+    ];
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -21,14 +29,15 @@ class ShareLinkController extends Controller
 
         $trip = $user->bookmarkedTrips()->findOrFail($validated['trip_id']);
 
+        // Find the most recent share link for this trip
         $existing = ShareLink::query()
             ->where('trip_id', $trip->id)
             ->where('user_id', $user->id)
-            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
             ->orderByDesc('id')
             ->first();
 
-        if ($existing) {
+        // Reuse it if it's not expired
+        if ($existing && !$existing->isExpired()) {
             return response()->json([
                 'url' => route('share.show', $existing->slug),
                 'slug' => $existing->slug,
@@ -39,9 +48,10 @@ class ShareLinkController extends Controller
             $slug = Str::lower(Str::random(10));
         } while (ShareLink::where('slug', $slug)->exists());
 
-        $expiresAt = ! empty($validated['expires_in'])
-            ? now()->addMinutes((int) $validated['expires_in'])
-            : null;
+        $expiresAt = null;
+        if (!empty($validated['expires_in'])) {
+            $expiresAt = now()->addMinutes((int) $validated['expires_in']);
+        }
 
         $link = ShareLink::create([
             'slug' => $slug,
@@ -96,7 +106,7 @@ class ShareLinkController extends Controller
 
     private function countryFromRequest(Request $request): ?string
     {
-        foreach (['CF-IPCountry', 'X-Country-Code', 'X-Geo-Country', 'X-App-Country'] as $header) {
+        foreach (self::COUNTRY_HEADERS as $header) {
             $value = $request->headers->get($header);
             if ($value && strlen($value) === 2) {
                 return strtoupper($value);
@@ -104,7 +114,10 @@ class ShareLinkController extends Controller
         }
 
         $param = (string) $request->input('country', '');
+        if ($param && strlen($param) === 2) {
+            return strtoupper($param);
+        }
 
-        return ($param && strlen($param) === 2) ? strtoupper($param) : null;
+        return null;
     }
 }

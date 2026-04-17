@@ -2,12 +2,23 @@ import React, { useEffect, useState } from "react";
 import { Link, router, usePage } from "@inertiajs/react";
 import "./TopNav.css";
 
+// Role levels stored on the user
+const ROLE_USER = 0;
+const ROLE_ADMIN = 1;
+const ROLE_SUPERADMIN = 2;
+
 export default function TopNav({ active = "" }) {
   const { auth } = usePage().props || {};
   const user = auth?.user;
-  const roleNum = typeof user?.role === "string" ? parseInt(user.role, 10) : user?.role ?? 0;
-  const isAdmin = roleNum >= 1;
-  const isSuper = roleNum === 2;
+
+  // Role might come back as a string or a number; normalize to number
+  let roleNum = user?.role ?? ROLE_USER;
+  if (typeof roleNum === "string") {
+    roleNum = parseInt(roleNum, 10);
+  }
+
+  const isAdmin = roleNum >= ROLE_ADMIN;
+  const isSuper = roleNum === ROLE_SUPERADMIN;
 
   const [open, setOpen] = useState(false);
 

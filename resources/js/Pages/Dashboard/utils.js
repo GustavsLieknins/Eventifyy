@@ -41,11 +41,22 @@ export function fmtDateTimeSimple(s) {
   return time ? `${label} • ${time}` : label;
 }
 
+const CURRENCY_SYMBOLS = { EUR: '€', USD: '$', GBP: '£', NOK: 'kr' };
+
+// Pull the currency code out of the API request URL (e.g. "...&curr=USD&...").
+function extractCurrencyCode(url) {
+  const match = String(url || '').match(/curr=([A-Z]{3})/);
+  return match ? match[1] : 'EUR';
+}
+
+function currencySymbol(code) {
+  return CURRENCY_SYMBOLS[code] || code + ' ';
+}
+
 export function inferCurrencySymbol(data) {
   const url = data?.requestMetadata?.url || '';
-  const curr = (url.match(/curr=([A-Z]{3})/)?.[1]) || 'EUR';
-  const symbols = { EUR: '€', USD: '$', GBP: '£', NOK: 'kr' };
-  return symbols[curr] || curr + ' ';
+  const code = extractCurrencyCode(url);
+  return currencySymbol(code);
 }
 
 // === Date Parsing ===

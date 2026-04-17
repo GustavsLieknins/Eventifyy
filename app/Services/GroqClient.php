@@ -52,8 +52,12 @@ class GroqClient
         }
 
         // Only keep valid 3-letter uppercase IATA codes
-        return array_values(array_filter($codes, function ($code) {
-            return is_string($code) && preg_match('/^[A-Z]{3}$/', $code);
-        }));
+        $validCodes = [];
+        foreach ($codes as $code) {
+            if (is_string($code) && preg_match('/^[A-Z]{3}$/', $code)) {
+                $validCodes[] = $code;
+            }
+        }
+        return $validCodes;
     }
 }

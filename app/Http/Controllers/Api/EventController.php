@@ -25,7 +25,6 @@ class EventController extends Controller
             'location' => $request->input('location', ''),
             'gl' => $countryCode,
             'hl' => $language,
-            'start' => (int) $request->input('start', 0),
         ];
 
         if ($request->filled('when')) {
