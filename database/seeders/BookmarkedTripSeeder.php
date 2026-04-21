@@ -136,12 +136,12 @@ class BookmarkedTripSeeder extends Seeder
                 'email'  => 'admin@admin.com',
                 'trips'  => [
                     [
-                        'title'   => 'Placebo – Unipol Forum, Milan',
+                        'title'   => 'Placebo - Unipol Forum, Milan',
                         'flights' => [$placebоFlight],
                         'hotels'  => [$placebоHotel],
                     ],
                     [
-                        'title'   => 'Khalid – AFAS Live, Amsterdam',
+                        'title'   => 'Khalid - AFAS Live, Amsterdam',
                         'flights' => [$khalidFlight],
                         'hotels'  => [$khalidHotel],
                     ],
@@ -151,12 +151,12 @@ class BookmarkedTripSeeder extends Seeder
                 'email'  => 'user@user.com',
                 'trips'  => [
                     [
-                        'title'   => 'Placebo – Unipol Forum, Milan',
+                        'title'   => 'Placebo - Unipol Forum, Milan',
                         'flights' => [$placebоFlight],
                         'hotels'  => [$placebоHotel],
                     ],
                     [
-                        'title'   => 'Arcade Fire – Ziggo Dome, Amsterdam',
+                        'title'   => 'Arcade Fire - Ziggo Dome, Amsterdam',
                         'flights' => [$arcadeFlight],
                         'hotels'  => [$arcadeHotel],
                     ],
@@ -166,17 +166,17 @@ class BookmarkedTripSeeder extends Seeder
                 'email'  => 'superadmin@superadmin.com',
                 'trips'  => [
                     [
-                        'title'   => 'Placebo – Unipol Forum, Milan',
+                        'title'   => 'Placebo - Unipol Forum, Milan',
                         'flights' => [$placebоFlight],
                         'hotels'  => [$placebоHotel],
                     ],
                     [
-                        'title'   => 'Khalid – AFAS Live, Amsterdam',
+                        'title'   => 'Khalid - AFAS Live, Amsterdam',
                         'flights' => [$khalidFlight],
                         'hotels'  => [$khalidHotel],
                     ],
                     [
-                        'title'   => 'Arcade Fire – Ziggo Dome, Amsterdam',
+                        'title'   => 'Arcade Fire - Ziggo Dome, Amsterdam',
                         'flights' => [$arcadeFlight],
                         'hotels'  => [$arcadeHotel],
                     ],
