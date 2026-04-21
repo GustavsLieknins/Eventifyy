@@ -3,11 +3,7 @@ import React from 'react';
 // Quick search chip data (kept here so it's easy to edit)
 const ARTIST_CHIPS = ['Korn', 'Lady Gaga', 'Morgenshtern', 'Linkin Park'];
 
-const DATE_CHIPS = [
-  { label: 'Today', value: 'date:today' },
-  { label: 'This Weekend', value: 'date:weekend' },
-  { label: 'Next Week', value: 'date:next_week' },
-];
+const COUNTRY_CHIPS = ['Latvia', 'Estonia', 'Lithuania', 'Germany', 'United Kingdom'];
 
 const CITY_CHIPS = ['London', 'Riga', 'Stockholm', 'Manchester'];
 
@@ -124,22 +120,22 @@ export default function SearchHeader({
               {/* Suggestion cards grid */}
               <div className="suggest-grid">
 
-                {/* By date */}
+                {/* By country */}
                 <div className="suggest-card">
-                  <div className="suggest-head">By date</div>
+                  <div className="suggest-head">By country</div>
                   <div className="chip-row">
-                    {DATE_CHIPS.map(({ label, value }) => (
+                    {COUNTRY_CHIPS.map((country) => (
                       <button
-                        key={value}
+                        key={country}
                         className="chip chip--pill chip--ghost"
-                        onClick={() => runQuickSearch?.(q || 'concert', value)}
+                        onClick={() => runQuickSearch?.('concert', '', country)}
                         type="button"
                       >
-                        {label}
+                        {country}
                       </button>
                     ))}
                   </div>
-                  <div className="hint">Sets the "When" filter for you.</div>
+                  <div className="hint">Find events in these countries.</div>
                 </div>
 
                 {/* By city */}
