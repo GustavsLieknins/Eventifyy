@@ -80,7 +80,7 @@
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
 }
 
-.card {
+.admin-page .card {
   position: relative;
   background: var(--ef-card-grad);
   border: 1px solid var(--ef-border);
@@ -93,13 +93,13 @@
   contain: layout paint;
 }
 
-.card:hover {
+.admin-page .card:hover {
   transform: translateY(-2px);
   box-shadow: var(--ef-shadow-hard);
   border-color: rgba(255, 255, 255, 0.24);
 }
 
-.card-title {
+.admin-page .card-title {
   font-size: 1.05rem;
   font-weight: 800;
   letter-spacing: 0.2px;
@@ -356,15 +356,15 @@
   font-weight: 800;
 }
 
-.card.lozenge {
+.admin-page .card.lozenge {
   padding: 0;
   overflow: hidden;
 }
-.card.lozenge .card-title {
+.admin-page .card.lozenge .card-title {
   padding: 14px 16px 8px;
   margin: 0;
 }
-.card.lozenge .list {
+.admin-page .card.lozenge .list {
   padding: 0 16px 14px;
 }
 
@@ -380,7 +380,7 @@
   margin: 6px 0 2px;
 }
 
-.card:focus-within,
+.admin-page .card:focus-within,
 .ef-btn:focus-visible {
   outline: 2px solid rgba(132, 255, 215, 0.9);
   outline-offset: 0;
@@ -406,7 +406,7 @@
   .globe-canvas {
     min-height: 420px;
   }
-  .card {
+  .admin-page .card {
     border-radius: 16px;
   }
 }
@@ -424,7 +424,7 @@
   }
 }
 
-.badge {
+.admin-page .badge {
   display: inline-grid;
   place-items: center;
   border-radius: 999px;
@@ -441,9 +441,9 @@
   color: var(--ef-text);
 }
 
-.card,
-.globe-card,
-.globe-canvas {
+.admin-page .card,
+.admin-page .globe-card,
+.admin-page .globe-canvas {
   clip-path: inset(0 round var(--ef-radius));
   -webkit-mask-image: -webkit-radial-gradient(white, black);
   overflow: hidden;
@@ -469,18 +469,18 @@
     letter-spacing: 0.15px;
   }
 
-  .card {
+  .admin-page .card {
     padding: 12px;
     border-radius: 14px;
     box-shadow: var(--ef-shadow-soft);
     transition: none;
   }
-  .card:hover {
+  .admin-page .card:hover {
     transform: none;
     box-shadow: var(--ef-shadow-soft);
   }
 
-  .card-title {
+  .admin-page .card-title {
     font-size: 1rem;
     margin-bottom: 8px;
   }
@@ -546,11 +546,11 @@
     font-size: 1.45rem;
   }
 
-  .card {
+  .admin-page .card {
     padding: 10px;
     border-radius: 12px;
   }
-  .card-title {
+  .admin-page .card-title {
     font-size: 0.98rem;
     margin-bottom: 6px;
   }
@@ -577,24 +577,6 @@
     gap: 8px;
     font-size: 0.9rem;
   }
-}
-
-@media (max-width: 560px) {
-  .search-header { width: 100% !important; }
-  .event-card { max-width: none !important; width: 100% !important; }
-}
-
-.search-header { top: var(--nav-h); z-index: 30; }
-
-.ef-sheet { -webkit-overflow-scrolling: touch; }
-
-.main-wrapper { isolation: isolate; }
-
-
-
-
-.main-wrapper {
-  padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
 
 :root {
