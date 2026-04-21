@@ -22,7 +22,9 @@
 
     @routes
 
-    @viteReactRefresh
+    @if(app()->environment('local'))
+        @viteReactRefresh
+    @endif
     @vite(['resources/js/app.jsx'])
 
     @inertiaHead
