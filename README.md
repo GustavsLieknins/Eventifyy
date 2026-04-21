@@ -8,7 +8,7 @@ How to run this project (terminal):
 
 2. Go to your desired folder
 
-3. git clone https://github.com/GustavsLieknins/Eventify.git
+3. git clone https://github.com/GustavsLieknins/Eventifyy.git
 
 4. cd eventify
 
