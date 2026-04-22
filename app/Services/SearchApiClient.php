@@ -6,12 +6,13 @@ use Illuminate\Support\Facades\Http;
 
 class SearchApiClient
 {
+    private const BASE_URL = 'https://www.searchapi.io/api/v1';
     private string $baseUrl;
     private string $apiKey;
 
     public function __construct()
     {
-        $this->baseUrl = (string) config('services.searchapi.base_url', 'https://www.searchapi.io/api/v1');
+        $this->baseUrl = (string) config('services.searchapi.base_url', self::BASE_URL);
         $this->apiKey = (string) config('services.searchapi.key', '');
     }
 

@@ -59,7 +59,6 @@ function HotelCard({ hotel, index, isSelected, onSelect }) {
       />
 
       <div className="hotel-grid">
-        {/* Thumbnail image */}
         <div className="thumb-wrap">
           {hotel.thumbnail ? (
             <img

@@ -14,7 +14,6 @@ import {
  */
 export default function FlightList({ data, selectedFlight, setSelectedFlight }) {
 
-  // Handle empty / error states
   if (data === null) {
     return <div className="muted">No flights loaded yet.</div>;
   }
@@ -23,7 +22,6 @@ export default function FlightList({ data, selectedFlight, setSelectedFlight }) 
     return <div className="error">Warning: {data.error}</div>;
   }
 
-  // Process the raw flight data into clean options (max 10)
   const flightOptions = extractFlightOptions(data)
     .map(normalizeFlightOption)
     .slice(0, 10);
@@ -48,7 +46,6 @@ export default function FlightList({ data, selectedFlight, setSelectedFlight }) 
     );
   }
 
-  // Render each flight as a selectable radio card
   return (
     <div className="cards-stack">
       {flightOptions.map((flight, index) => (
