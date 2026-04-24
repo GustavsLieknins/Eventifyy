@@ -24,7 +24,7 @@ test('lietotājs var apskatīt savu grāmatzīmju sarakstu', function () {
         [
             'user_id' => 1,
             'title' => 'My Trip',
-            'fligths' => [],
+            'flights' => [],
             'hotels' => [],
         ]
     );
@@ -60,7 +60,7 @@ test('lietotājs var dalīties ar grāmatzīmes pievienotu pasākumu', function 
         [
             'user_id' => 1,
             'title' => 'My Trip',
-            'fligths' => [],
+            'flights' => [],
             'hotels' => [],
         ]
     );
@@ -96,7 +96,7 @@ test('lietotājs var dzēst grāmatzīmes pievienotu pasākumu', function () {
         [
             'user_id' => 1,
             'title' => 'My Trip',
-            'fligths' => [],
+            'flights' => [],
             'hotels' => [],
         ]
     );
@@ -132,7 +132,7 @@ test('lietotājs var apskatīt grāmatzīmes pievienota pasākuma detaļas', fun
         [
             'user_id' => 1,
             'title' => 'My Trip',
-            'fligths' => [],
+            'flights' => [],
             'hotels' => [],
         ]
     );

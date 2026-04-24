@@ -19,7 +19,7 @@ Route::middleware(['auth', 'superadmin'])->group(function () {
     Route::post('/superadmin/{user}/remove-super', [SuperAdminController::class, 'removeSuper'])->name('superadmin.removeSuper');
 });
 
-Route::middleware(['auth', 'verified', 'admin'])->group(function () {
+Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin', [AdminStatsController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/admin/stats.json', [AdminStatsApiController::class, 'index'])->name('admin.stats.json');
     Route::get('/admin/geo/points', [AdminGeoApiController::class, 'points'])->name('admin.geo.points');
@@ -34,7 +34,7 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard/Dashboard');
 })->name('dashboard');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/bookmarks', [BookmarkedTripController::class, 'index'])->name('bookmarks');
     Route::post('/bookmarks', [BookmarkedTripController::class, 'store'])->name('bookmarks.store');
     Route::delete('/bookmarks/{id}', [BookmarkedTripController::class, 'destroy'])->name('bookmarks.destroy');
@@ -48,7 +48,7 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/s/{slug}', [ShareLinkController::class, 'show'])->name('share.show');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::post('/share-links', [ShareLinkController::class, 'store'])->name('share.store');
 });
 

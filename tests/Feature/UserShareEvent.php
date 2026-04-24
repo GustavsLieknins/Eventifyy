@@ -22,7 +22,7 @@ test('lietotājs var dalīties ar koncertu', function () {
         [
             'user_id' => 1,
             'title' => 'My Trip',
-            'fligths' => [],
+            'flights' => [],
             'hotels' => [],
         ]
     );

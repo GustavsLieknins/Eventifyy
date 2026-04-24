@@ -3,7 +3,7 @@ import geo from '@/data/geo.json';
 
 // === Constants ===
 
-export const DEFAULT_GL = 'uk';
+export const DEFAULT_GL = 'gb';
 export const DEFAULT_HL = 'en';
 export const DEFAULT_EVENT_LOCATION = '';
 

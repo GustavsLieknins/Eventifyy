@@ -12,7 +12,7 @@ class BookmarkedTripSeeder extends Seeder
     {
         // Real event data sourced from SearchAPI (google_events + google_flights + google_hotels)
 
-        $placebоFlight = [
+        $placeboFlight = [
             'fromId'        => 'RIX',
             'toId'          => 'MXP',
             'price'         => 167,
@@ -40,7 +40,7 @@ class BookmarkedTripSeeder extends Seeder
             ],
         ];
 
-        $placebоHotel = [
+        $placeboHotel = [
             'title'     => 'BELSTAY MILANO ASSAGO',
             'address'   => 'Via Milanofiori, Assago, Milan, Italy',
             'rating'    => 4.2,
@@ -137,8 +137,8 @@ class BookmarkedTripSeeder extends Seeder
                 'trips'  => [
                     [
                         'title'   => 'Placebo - Unipol Forum, Milan',
-                        'flights' => [$placebоFlight],
-                        'hotels'  => [$placebоHotel],
+                        'flights' => [$placeboFlight],
+                        'hotels'  => [$placeboHotel],
                     ],
                     [
                         'title'   => 'Khalid - AFAS Live, Amsterdam',
@@ -152,8 +152,8 @@ class BookmarkedTripSeeder extends Seeder
                 'trips'  => [
                     [
                         'title'   => 'Placebo - Unipol Forum, Milan',
-                        'flights' => [$placebоFlight],
-                        'hotels'  => [$placebоHotel],
+                        'flights' => [$placeboFlight],
+                        'hotels'  => [$placeboHotel],
                     ],
                     [
                         'title'   => 'Arcade Fire - Ziggo Dome, Amsterdam',
@@ -167,8 +167,8 @@ class BookmarkedTripSeeder extends Seeder
                 'trips'  => [
                     [
                         'title'   => 'Placebo - Unipol Forum, Milan',
-                        'flights' => [$placebоFlight],
-                        'hotels'  => [$placebоHotel],
+                        'flights' => [$placeboFlight],
+                        'hotels'  => [$placeboHotel],
                     ],
                     [
                         'title'   => 'Khalid - AFAS Live, Amsterdam',

@@ -13,6 +13,10 @@ class GroqClient
     public function __construct()
     {
         $this->apiKey = (string) config('services.groq.api_key', '');
+
+        if ($this->apiKey === '') {
+            throw new \RuntimeException('Groq API key is not configured (services.groq.api_key).');
+        }
     }
 
     public function resolveAirports(string $location): array

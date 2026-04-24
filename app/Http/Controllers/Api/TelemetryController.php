@@ -10,6 +10,15 @@ class TelemetryController extends Controller
 {
     public function visit(Request $request)
     {
+        $request->validate([
+            'lat'    => ['nullable', 'numeric', 'between:-90,90'],
+            'lng'    => ['nullable', 'numeric', 'between:-180,180'],
+            'meta'   => ['nullable', 'array'],
+            'path'   => ['nullable', 'string', 'max:2048'],
+            'city'   => ['nullable', 'string', 'max:255'],
+            'region' => ['nullable', 'string', 'max:255'],
+        ]);
+
         VisitLog::create([
             'user_id' => $request->user()?->id,
             'path' => (string) $request->input('path', $request->path()),

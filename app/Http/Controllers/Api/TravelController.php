@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Services\SearchApiClient;
 use App\Services\TravelService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-
 class TravelController extends Controller
 {
     public function flights(Request $request, SearchApiClient $searchApi, TravelService $travel)
@@ -58,12 +56,19 @@ class TravelController extends Controller
 
         $q = $venue ? "hotels near {$venue} {$city}" : "hotels in {$city}";
 
+        $dates = $travel->resolveFlightDates(
+            $request->input('checkInDate'),
+            $request->input('checkOutDate'),
+            $request->input('date'),
+            (int) $request->input('stayNights', 2)
+        );
+
         try {
             $data = $searchApi->hotels([
-                'q' => $q,
-                'check_in_date' => Carbon::today()->addDays(14)->format('Y-m-d'),
-                'check_out_date' => Carbon::today()->addDays(16)->format('Y-m-d'),
-                'hl' => 'en',
+                'q'              => $q,
+                'check_in_date'  => $dates['outbound_date'],
+                'check_out_date' => $dates['return_date'],
+                'hl'             => 'en',
             ]);
 
             $properties = $data['properties'] ?? [];

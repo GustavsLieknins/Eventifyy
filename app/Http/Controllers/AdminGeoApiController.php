@@ -12,7 +12,6 @@ class AdminGeoApiController extends Controller
         $days = (int) $request->query('days', 365); // generous default
         $since = now()->subDays(max(0, $days));
         $limit = (int) $request->query('limit', 5000);
-        $round = (float) $request->query('round', 0.1); // degrees grid
         $all = (int) $request->query('all', 0) === 1; // bypass date filter for debugging
 
         // MySQL ROUND to 1 decimal by default (0.1 grid). Force floats in JSON.

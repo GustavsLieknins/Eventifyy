@@ -22,7 +22,7 @@ class ShareLinkController extends Controller
     {
         $validated = $request->validate([
             'trip_id' => ['required', 'integer', 'exists:bookmarked_trips,id'],
-            'expires_in' => ['nullable', 'integer', 'min:0'],
+            'expires_in' => ['nullable', 'integer', 'min:0', 'max:10080'],
         ]);
 
         $user = $request->user();

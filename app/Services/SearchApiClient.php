@@ -14,9 +14,13 @@ class SearchApiClient
     {
         $this->baseUrl = (string) config('services.searchapi.base_url', self::BASE_URL);
         $this->apiKey = (string) config('services.searchapi.key', '');
+
+        if ($this->apiKey === '') {
+            throw new \RuntimeException('SearchAPI key is not configured (services.searchapi.key).');
+        }
     }
 
-    private function get(string $endpoint, array $params): array
+    private function get(string $endpoint, array $params): array // Sagatavo vaicājumu
     {
         $params['api_key'] = $this->apiKey;
 
@@ -27,7 +31,7 @@ class SearchApiClient
             ->json();
     }
 
-    public function events(array $params): array
+    public function events(array $params): array // Pasākumu vaicāšanas loģika
     {
         $params['engine'] = 'google_events';
 

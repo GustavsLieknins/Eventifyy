@@ -17,7 +17,11 @@ class GeoController extends Controller
 
         try {
             $codes = $groq->resolveAirports($label);
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            \Log::warning('GeoController::airports failed', [
+                'label'   => $label,
+                'message' => $e->getMessage(),
+            ]);
             $codes = [];
         }
 
