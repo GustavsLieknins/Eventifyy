@@ -444,6 +444,9 @@
     aspect-ratio: 16 / 10;
     min-height: 260px;
   }
+  .modal {
+    max-height: calc(100svh - var(--ef-nav-h, 56px) - 8px);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   * {
