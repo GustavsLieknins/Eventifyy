@@ -997,7 +997,6 @@
   .modal-wrap { align-items: end; padding: 0; }
   .modal {
     width: 100vw;
-    max-height: 100svh;
     border-radius: 14px 14px 0 0;
     padding: 12px 12px 16px;
   }
