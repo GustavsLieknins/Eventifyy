@@ -240,7 +240,7 @@
 .modal {
   position: relative;
   width: min(1200px, 98vw);
-  max-height: 94svh;
+  max-height: calc(100svh - var(--ef-nav-h, 56px) - 8px);
   overflow: hidden;
   background: var(--glass-strong);
   border: 1px solid rgba(255, 255, 255, 0.1);
