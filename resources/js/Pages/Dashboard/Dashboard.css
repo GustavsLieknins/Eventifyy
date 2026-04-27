@@ -195,7 +195,7 @@
   max-width: var(--content-max);
   margin: 0 auto;
   padding: 0 var(--page-pad-x) 56px;
-  padding-top: 55px;
+  padding-top: 16px;
   opacity: 0;
   transform: translateY(6px);
   transition: opacity var(--dur-med) var(--ease-smooth),
@@ -682,7 +682,7 @@
   box-shadow: none;
 }
 .main-wrapper.search-active .results-area {
-  padding-top: 55px;
+  padding-top: 16px;
 }
 
 :root {
@@ -878,13 +878,16 @@
 
 .tm-backdrop {
   position: fixed;
-  inset: 0;
+  top: var(--nav-h, 56px);
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(10, 12, 18, 0.62);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 60;
+  z-index: var(--ef-pop-z, 10050);
 }
 .tm-sheet {
   position: relative;
