@@ -5,7 +5,6 @@ use App\Http\Controllers\AdminStatsApiController;
 use App\Http\Controllers\AdminStatsController;
 use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\BookmarkedTripController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShareLinkController;
 use App\Http\Controllers\SuperAdminController;
 use Illuminate\Support\Facades\Route;
@@ -38,12 +37,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/bookmarks', [BookmarkedTripController::class, 'index'])->name('bookmarks');
     Route::post('/bookmarks', [BookmarkedTripController::class, 'store'])->name('bookmarks.store');
     Route::delete('/bookmarks/{id}', [BookmarkedTripController::class, 'destroy'])->name('bookmarks.destroy');
-});
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 Route::get('/s/{slug}', [ShareLinkController::class, 'show'])->name('share.show');
