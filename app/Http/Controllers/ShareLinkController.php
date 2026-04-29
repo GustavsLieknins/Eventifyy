@@ -10,7 +10,6 @@ use Inertia\Inertia;
 
 class ShareLinkController extends Controller
 {
-    // Common CDN/proxy country headers, in order of preference
     private const COUNTRY_HEADERS = [
         'CF-IPCountry',
         'X-Country-Code',
@@ -29,14 +28,12 @@ class ShareLinkController extends Controller
 
         $trip = $user->bookmarkedTrips()->findOrFail($validated['trip_id']);
 
-        // Find the most recent share link for this trip
         $existing = ShareLink::query()
             ->where('trip_id', $trip->id)
             ->where('user_id', $user->id)
             ->orderByDesc('id')
             ->first();
 
-        // Reuse it if it's not expired
         if ($existing && !$existing->isExpired()) {
             return response()->json([
                 'url' => route('share.show', $existing->slug),

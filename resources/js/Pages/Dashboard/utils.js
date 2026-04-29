@@ -141,7 +141,7 @@ export function getCityFromAddress(addr) {
   if (!lastPart) return '';
 
   const parts = lastPart.split(',').map(s => s.trim()).filter(Boolean);
-  const city = parts[0] || '';
+  const city = parts.find(p => !/^\d/.test(p)) || parts[0] || '';
   const country = parts[parts.length - 1] || '';
 
   // Try to find a 2-letter ISO code

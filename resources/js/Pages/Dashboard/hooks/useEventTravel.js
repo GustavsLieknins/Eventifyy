@@ -185,11 +185,12 @@ export default function useEventTravel(pushToast, originIata, userId) {
     await fetchHotels(city, venue);
     setIsHotelsLoading(false);
 
-    // Resolve destination airport(s)
+    // Resolve destination airport(s) — use venue as fallback if city extraction failed
     const manualArrival = (arrivalOverride || '').trim().toUpperCase();
+    const locationLabel = city || venue;
     const arrivalAirports = manualArrival
       ? [manualArrival]
-      : await resolveCityToIataList(city);
+      : await resolveCityToIataList(locationLabel);
 
     const departureAirport = originIata || 'RIX';
     await fetchFlightsWithFallbacks(departureAirport, arrivalAirports, departDate, returnDateISO, 1);
