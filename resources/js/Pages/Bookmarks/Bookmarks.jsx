@@ -388,7 +388,7 @@ export default function Bookmarks({ trips: initialTrips }) {
                     type="button"
                     onClick={(event) => { event.stopPropagation(); createShareLink(trip.id); }}
                     title="Create shareable link"
-                    iconLeft={<Icon name="link" />}
+                    iconLeft={<Icon name="share" />}
                   >
                     Share link
                   </Button>

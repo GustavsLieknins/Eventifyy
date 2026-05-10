@@ -19,6 +19,8 @@ export default memo(function Icon({ name, size = 18, className = '' }) {
       return <svg width={s} height={s} viewBox="0 0 24 24" className={className} aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z M2 12h20M12 2c3.5 4.5 3.5 15.5 0 20M12 2c-3.5 4.5-3.5 15.5 0 20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/></svg>;
     case 'link':
       return <svg width={s} height={s} viewBox="0 0 24 24" className={className} aria-hidden="true"><path d="M10 13a5 5 0 007.07 0l1.41-1.41a5 5 0 10-7.07-7.07L10 5m4 6a5 5 0 01-7.07 0L5.5 9.57a5 5 0 117.07-7.07L13 3" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+    case 'share':
+      return <svg width={s} height={s} viewBox="0 0 24 24" className={className} aria-hidden="true"><path d="M12 3v13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M8 7l4-4 4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/><path d="M4 13v6a2 2 0 002 2h12a2 2 0 002-2v-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/></svg>;
     default:
       return null;
   }
