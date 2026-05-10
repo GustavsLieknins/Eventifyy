@@ -169,7 +169,7 @@ function getTripDestination(trip) {
 
 export default function Bookmarks({ trips: initialTrips }) {
   useVisitBeacon();
-  const { flash } = usePage().props;
+  const { flash, csrf_token: csrfToken } = usePage().props;
 
   // --- State ---
   const [trips, setTrips] = useState(() => initialTrips || []);
@@ -235,7 +235,6 @@ export default function Bookmarks({ trips: initialTrips }) {
     try {
       setDeletingTripId(tripId);
 
-      const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
       const response = await fetch(`/bookmarks/${tripId}`, {
         method: 'DELETE',
@@ -263,7 +262,6 @@ export default function Bookmarks({ trips: initialTrips }) {
 
   async function createShareLink(tripId) {
     try {
-      const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
       const response = await fetch('/share-links', {
         method: 'POST',
