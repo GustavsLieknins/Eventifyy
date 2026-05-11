@@ -85,26 +85,6 @@ export default function AdminDashboard() {
             </ul>
           </div>
 
-          <div className="grid-2" style={{ marginTop: 16 }}>
-            <div className="card spark">
-              <div className="card-title">Visits (14d)</div>
-              {visitsByDay.map((r, i) => (
-                <div key={i} className="spark-row">
-                  <span>{r.d}</span>
-                  <span className="spark-value">{r.c}</span>
-                </div>
-              ))}
-            </div>
-            <div className="card spark">
-              <div className="card-title">Searches (14d)</div>
-              {searchesByDay.map((r, i) => (
-                <div key={i} className="spark-row">
-                  <span>{r.d}</span>
-                  <span className="spark-value">{r.c}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </>

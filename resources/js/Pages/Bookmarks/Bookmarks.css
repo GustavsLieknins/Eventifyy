@@ -99,16 +99,17 @@
 }
 
 .ui-badge {
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 0.85rem;
-  font-weight: 800;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  letter-spacing: 0.01em;
 }
 .ui-badge--accent {
   background: var(--accent);
